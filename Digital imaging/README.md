@@ -59,7 +59,9 @@ Loading the raw data and processing by Rawpy takes significant more time than th
 
 ### Test with own data
 We took pictures in RAW format with an iPhone 11 and the RAW+ application. The exposure ratio is the same as in the article (i.e. x100) but with a different exposure (1/100s for short exposure and 1s for long exposure).
+
 black_level_per_channel of the rawpy module returns the black level of the camera (here 528) and the modification must be done in "test_iPhone_Fuji.py" and "test_iPhone_Fuji.py".
+
 We have slightly modified the authors' code due to the conflict between the versions of scipy.misc and tensorflow modules.
 Python libraries (version 3.7) used: Tensorflow (version 1.1) + Scipy + Numpy + Rawpy.
 
