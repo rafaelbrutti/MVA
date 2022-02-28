@@ -27,3 +27,11 @@
 <img height=300px src="http://www.di.ens.fr/willow/teaching/recvis_orig/assignment3/images/fullyconn.png"/></p>
 <p align="center">Figure 1</p>
 <p align="center"></p>
+
+<h3><big><center> Assignment 3: Image classification </center></big></h3>
+
+(Adapted from Rob Fergus and Soumith Chintala)
+
+Goal
+
+This assignment requires you to participate in a Kaggle competition with the rest of the class on a subset of the Caltech-UCSD Birds-200-2011 bird dataset. The objective is to produce a model that gives the highest possible accuracy on a test dataset containing the same categories.
