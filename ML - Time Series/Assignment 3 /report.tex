@@ -1,0 +1,344 @@
+\documentclass[11pt]{article}
+\usepackage{theme}
+\usepackage{shortcuts}
+% Document parameters
+% Document title
+\title{Assignment 3 (ML for TS) - MVA 2021/2022}
+\author{
+Florian Lamalle \email{florian.lamalle@telecom-paris.fr} \\ % student 1
+Rafaël Brutti \email{rafael.brutti@telecom-paris.fr} % student 2
+}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+\paragraph{Objective.} The goal is to present (i) a model selection heuristics to find the number of change-points in a signal and (ii) wavelets for graph signals.
+
+\paragraph{Warning and advice.} 
+\begin{itemize}
+    \item Use code from the tutorials as well as from other sources. Do not code yourself well-known procedures (e.g. cross validation or k-means), use an existing implementation.
+    \item The associated notebook contains some hints and several helper functions.
+    \item Be concise. Answers are not expected to be longer than a few sentences (omitting calculations).
+\end{itemize}
+
+
+
+\paragraph{Instructions.}
+\begin{itemize}
+    \item Fill in your names and emails at the top of the document.
+    \item Hand in your report (one per pair of students) by Friday 18\textsuperscript{th} March 11:59 PM.
+    \item Rename your report and notebook as follows:\\ \texttt{FirstnameLastname1\_FirstnameLastname1.pdf} and\\ \texttt{FirstnameLastname2\_FirstnameLastname2.ipynb}.\\
+    For instance, \texttt{LaurentOudre\_CharlesTruong.pdf}.
+    \item Upload your report (PDF file) and notebook (IPYNB file) using this link: \href{https://www.dropbox.com/request/5DKPDBVAJ25hon0ZZsnn}{dropbox.com/request/5DKPDBVAJ25hon0ZZsnn}.
+\end{itemize}
+
+
+\newpage
+\section{Model selection for change-point detection}
+
+\paragraph{Notations.} In the following, $\norm{x}$ is the Euclidean norm of $x$ if $x$ is a vector and the Frobenius norm if $x$ is a matrix. A set of change-points is denoted by a bold $\pmb{\tau}=\{t_1,t_2,\dots\}$ and $|\pmb{\tau}|$ (the cardinal of $\pmb{\tau}$) is the number of change-points.
+By convention $t_0=0$ and $t_{|\pmb{\tau}|+1}=T$.
+For a set of change-points $\pmb{\tau}$, $\Pi_{\pmb{\tau}}$ is the orthogonal projection onto the linear subspace of piecewise constant signals with change-points in $\pmb{\tau}$: for a signal $x=\{x_t\}_{t=0}^{T-1}$,
+\begin{equation}
+    \left(\Pi_{\pmb{\tau}}x\right)_t = \bar{x}_{t_k..t_{k+1}} \quad\text{ if } t_k\leq t < t_{k+1}
+\end{equation}
+where $\bar{x}_{t_k..t_{k+1}}$ is the empirical mean of the subsignal $x_{t_k..t_{k+1}}=\{x_t\}_{t_k}^{t_{k+1}-1}$.
+
+\paragraph{Model selection.} Assume we observe a $\RR^d$-valued signal $y=\{y_t\}_{t=0}^{T-1}$ with $T$ samples that follows the model
+\begin{equation}
+    y_t = f_t + \varepsilon_t 
+\end{equation}
+where $f$ is a deterministic signal which we want to estimate with piecewise constant signals and $\varepsilon_t$ is i.i.d.\ with mean 0 and covariance $\sigma^2 I_d$.
+
+The ideal choice of $\pmb{\tau}$ minimizes the distance from the true (noiseless) signal $f$:
+\begin{equation}
+    \pmb{\tau}^\star = \argmin_{\pmb{\tau}} \frac{1}{T}\norm{f - \Pi_{\pmb{\tau}}y}^2.
+\end{equation}
+The estimator $\pmb{\tau}^\star$ is an \textit{oracle} estimator because it relies on the unknown signal $f$.
+Several model selection procedures rely on the "unbiased risk estimation heuristics": if $\hat{\pmb{\tau}}$ minimizes a criterion $\text{crit}(\pmb{\tau})$ such that
+\begin{equation}\label{eq:unbiased_risk_heuristics}
+    \EE\left[ \text{crit}(\pmb{\tau}) \right] \approx \EE\left[ \frac{1}{T}\norm{f - \Pi_{\pmb{\tau}}y}^2 \right]
+\end{equation}
+then 
+\begin{equation}
+    \frac{1}{T}\norm{f - \Pi_{\hat{\pmb{\tau}}}y}^2 \approx \min_{\pmb{\tau}} \frac{1}{T}\norm{f - \Pi_{\pmb{\tau}}y}^2
+\end{equation}
+under some conditions.
+In other words, the estimator $\hat{\pmb{\tau}}$ approximately minimizes the oracle quadratic risk.
+
+Here, we will consider penalized criteria:
+\begin{equation}
+    \text{crit}(\pmb{\tau}) = \frac{1}{T}\norm{y - \Pi_{\pmb{\tau}}y}^2 + \text{pen}(\pmb{\tau})
+\end{equation}
+where $\text{pen}$ is a penalty function.
+In addition, let 
+\begin{equation}
+    \hat{\pmb{\tau}}_{\text{pen}} := \argmin_{\pmb{\tau}} \left[ \frac{1}{T}\norm{y - \Pi_{\pmb{\tau}}y}^2 + \text{pen}(\pmb{\tau})\right].
+\end{equation}
+
+\newpage
+\begin{exercise}[subtitle=Ideal penalty]
+\begin{itemize}
+    \item Calculate $\EE[\norm{\varepsilon}^2/T]$, $\EE[\norm{f - \Pi_{\pmb{\tau}}y}^2/T]$ and $\EE[\norm{y - \Pi_{\pmb{\tau}}y}^2/T]$.
+    \item What would be an ideal penalty $\text{pen}_{\text{id}}$ such that Equation~\eqref{eq:unbiased_risk_heuristics} is verified?
+\end{itemize}
+
+\end{exercise}
+
+\begin{solution}  % ANSWER HERE
+
+
+\begin{itemize}
+    \item Firstly, $\norm{\varepsilon}^2 = Tr(\varepsilon^T\varepsilon) = \sum_{0 \leq t \leq T-1}\norm{ \varepsilon_t}^2$
+
+$\EE[\frac{\norm{\varepsilon}^2}{T}] = T.\EE[\frac{\norm{\varepsilon_0}^2}{T}] =  \sum_{1 \leq i \leq d} \EE[(\varepsilon_0)_i^2] = d.\sigma^2$,  $\varepsilon_t$ is i.i.d.\ with mean 0 and covariance $\sigma^2 I_d$.
+ 
+    \item $\norm{f - \Pi_{\pmb{\tau}}y}^2 = \sum_{k = 1}^ {\vert \tau \vert} \sum_{i = t_k}^{t_{k+1}-1} \norm{f_i - (\Pi_{\pmb{\tau}}y)_i}^2 =  \sum_{k = 1}^ {\vert \tau \vert} \sum_{i = t_k}^{t_{k+1}-1} \frac{1}{(t_{k+1}-t_k)^2} \norm{ \sum_{j = t_k}^{t_{k+1}-1}f_i - y_j}^2$
+    
+However, 
+
+$\norm{ \sum_{j = t_k}^{t_{k+1}-1}f_i - y_j}^2 = \sum_{j = t_k}^{t_{k+1}-1} \sum_{s = t_k}^{t_{k+1}-1}(f_i - f_j - \varepsilon_j)^T (f_i - f_s - \varepsilon_s) $
+$$ =  \sum_{j = t_k}^{t_{k+1}-1} \sum_{s = t_k}^{t_{k+1}-1}(f_i - f_j)^T (f_i - f_s)  - \varepsilon_j^T (f_i - f_s)  - (f_i - f_j)^T \varepsilon_s + \varepsilon_j^T\varepsilon_s$$
+
+$\EE[\frac{\norm{f - \Pi_{\pmb{\tau}}y}^2}{T}] =\sum_{k = 1}^ {\vert \tau \vert} \sum_{i = t_k}^{t_{k+1}-1}   \sum_{j = t_k}^{t_{k+1}-1} \frac{1}{(t_{k+1}-t_k)^2} \left[d.\sigma^2 + \sum_{s = t_k}^{t_{k+1}-1}(f_i - f_j)^T (f_i - f_s)  \right]$
+
+$ \qquad  \qquad  \quad  = \frac{d.\sigma^2.\vert \tau \vert }{T}+  \frac{1}{T}\sum_{k = 1}^ {\vert \tau \vert} \sum_{i = t_k}^{t_{k+1}-1}   \sum_{j = t_k}^{t_{k+1}-1} \sum_{s = t_k}^{t_{k+1}-1} \frac{1}{(t_{k+1}-t_k)^2} (f_i - f_j)^T (f_i - f_s) $
+
+
+    \item $\EE[\frac{\norm{y - \Pi_{\pmb{\tau}}y}^2}{T}] = \EE[\frac{\norm{f +  \varepsilon- \Pi_{\pmb{\tau}}y}^2}{T}]  = \EE[\frac{\norm{ \varepsilon}^2 + \norm{f - \Pi_{\pmb{\tau}}y}^2 + 2.<\varepsilon,f - \Pi_{\pmb{\tau}}y>}{T}] $
+    
+$$ <\varepsilon,f - \Pi_{\pmb{\tau}}y> = \sum_{0 \leq t \leq T-1, 1 \leq i \leq d} (\varepsilon_t)_i . (f_t - (\Pi_{\pmb{\tau}}y)_t)_i =  \sum_{1 \leq k \leq \vert \tau \vert}   \sum_{t_k \leq t \leq t_{k+1}-1}  \sum_{1 \leq i \leq d} \quad (\varepsilon_t)_i . (\sum_{t_k \leq j \leq t_{k+1}-1} \left[ f_t - f_j- \varepsilon_j \right]_i)$$ 
+Then, 
+$\EE[<\varepsilon,f - \Pi_{\pmb{\tau}}y>]  =  \sum_{1 \leq k \leq \vert \tau \vert}   \sum_{t_k \leq t \leq t_{k+1}-1}  \sum_{1 \leq i \leq d} ( - \sigma^2 ) = - \sigma^2.d.\vert \tau \vert$
+
+Finally, 
+$\EE[\frac{\norm{y - \Pi_{\pmb{\tau}}y}^2}{T}]  = \EE[\frac{\norm{ \varepsilon}^2}{T}] + \EE[\dfrac{\norm{f - \Pi_{\pmb{\tau}}y}^2}{T}] - \frac{2.\sigma^2.d.\vert \tau \vert}{T}$
+
+\end{itemize}
+
+
+Then, 
+$\EE\left[ \text{crit}(\pmb{\tau}) \right] \approx \EE\left[ \frac{1}{T}\norm{f - \Pi_{\pmb{\tau}}y}^2\right]$ 
+if $\text{pen}(\pmb{\tau}) = \frac{2.\sigma^2.d.\vert \tau \vert}{T}$
+
+
+The ideal penalty is 
+\begin{equation}
+    \text{pen}_{\text{id}} (\pmb{\tau}) = \frac{2.\sigma^2.d.\vert \tau \vert}{T}
+\end{equation}
+\end{solution}
+
+\newpage
+\begin{exercise}[subtitle=Mallows' $C_p$]
+The ideal penalty depends on the unknown value of $\sigma$. Pluging an estimator $\hat{\sigma}$ into $\text{pen}_{\text{id}}$ yields the well-known Mallows' $C_p$. Use the empirical variance on the first 10\% of the signal as an estimator of $\sigma^2$.
+
+Simulate two noisy piecewise constant signals with the function \texttt{ruptures.pw\_constant} (set the dimension to $d=2$) for each combination of parameters: \texttt{n\_bkps}$\in\{2, 4, 6, 8, 10\}$, $T\in \{100, 200, 500, 1000\}$ and $\sigma\in \{1, 2, 5, 7\}$.
+
+
+Using Mallows' $C_p$,
+\begin{itemize}
+    \item for $\sigma = 2$ and $T\in \{100, 200, 500, 1000\}$, compute the Hamming metric between the true segmentation and the estimated segmentation and report the average on Figure~\ref{fig:simulation-mallows}-a;
+    \item for $T = 500$ and $\sigma\in \{1, 2, 5, 7\}$, compute the Hamming metric between the true segmentation and the estimated segmentation and report the average on Figure~\ref{fig:simulation-mallows}-b.
+\end{itemize}
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(a) Hamming metric vs the number T of samples}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(b) Hamming metric vs the standard deviation $\sigma$}
+    \end{minipage}
+    \caption{Performance of Mallows' $C_p$}\label{fig:simulation-mallows}
+\end{figure}
+\end{solution}
+
+\newpage
+\begin{exercise}[subtitle=Slope heuristics]
+The ideal penalty is of shape $\text{pen} (\pmb{\tau}) = Cd|\pmb{\tau}|/T$ where $C>0$. The slope heuristics is a procedure to infer the best $C$ without knowing $\sigma$.
+
+\paragraph{Slope heuristics algorithm.}
+\begin{itemize}
+    \item Estimate the slope of $\hat{s}$ of $\min_{\pmb{\tau}, |\pmb{\tau}|=K}\norm{\Pi_{\pmb{\tau}}-y}^2$ as a function of $K$ for $K$ "large enough". Define $\hat{C}_{\text{slope}} := -T\hat{s}$.
+    \item Estimate $\pmb{\hat{\tau}} = \argmin_{\pmb{\tau}} \norm{y - \Pi_{\pmb{\tau}}y}^2/T + \hat{C}_{\text{slope}} d|\pmb{\tau}|/T$.
+\end{itemize}
+In simulations, "large enough" means for $K$ between 15 and $0.4T$.
+
+Simulate two noisy piecewise constant signals with the function \texttt{ruptures.pw\_constant} (set the dimension to $d=2$) for each combination of parameters: \texttt{n\_bkps}$\in\{2, 4, 6, 8, 10\}$, $T\in \{100, 200, 500, 1000\}$ and $\sigma\in \{1, 2, 5, 7\}$.
+
+Using the slope heuristics,
+\begin{itemize}
+    \item for $\sigma = 2$, $T\in \{100, 200, 500, 1000\}$, compute the average Hamming metric between the true segmentations and the estimated segmentations and report the average on Figure~\ref{fig:simulation-slope}-a;
+    \item for $T = 500$ and $\sigma\in \{1, 2, 5, 7\}$, compute the average Hamming metric between the true segmentations and the estimated segmentations and report the average on Figure~\ref{fig:simulation-slope}-b.
+\end{itemize}
+
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(a) Hamming metric vs the number T of samples}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(b) Hamming metric vs the standard deviation $\sigma$}
+    \end{minipage}
+    \caption{Performance of the slope heuristics}\label{fig:simulation-slope}
+\end{figure}
+\end{solution}
+
+
+\newpage
+\section{Wavelet transform for graph signals}
+Let $G$ be a graph defined a set of $n$ nodes $V$ and a set of edges $E$. A specific node is denoted by $v$ and a specific edge, by $e$.
+The eigenvalues and eigenvectors of the graph Laplacian $L$ are $\lambda_1\leq\lambda_2\leq\dots\leq \lambda_n$ and $u_1$, $u_2$, \dots, $u_n$ respectively.
+
+For a signal $f\in\RR^{n}$, the Graph Wavelet Transform (GWT) of $f$ is $ W_f: \{1,\dots,M\}\times V \longrightarrow \RR$:
+\begin{equation}
+    W_f(m, v) := \sum_{l=1}^n \hat{g}_m(\lambda_l)\hat{f}_l u_l(v)
+\end{equation}
+where $\hat{f}= [\hat{f}_1,\dots,\hat{f}_n]$ is the Fourier transform of $f$ and $\hat{g}_m$ are $M$ kernel functions.
+The number $M$ of scales is a user-defined parameter and is set to $M:=9$ in the following.
+Several designs are available for the $\hat{g}_m$; here, we use the Spectrum Adapted Graph Wavelets (SAGW).
+Formally, each kernel $\hat{g}_m$ is such that
+\begin{equation}
+    \hat{g}_m(\lambda) := \hat{g}^U(\lambda - am) \quad (0\leq\lambda\leq\lambda_n)
+\end{equation}
+where $a:=\lambda_n / (M+1-R)$,
+\begin{equation}
+    \hat{g}^U(\lambda) := \frac{1}{2}\left[ 1 + \cos\left( 2\pi\left(\frac{\lambda}{a R}  + \frac{1}{2} \right)\right) \right]\one(-Ra \leq \lambda < 0)
+\end{equation}
+and $R>0$ is defined by the user.
+
+\begin{exercise}
+Plot the kernel functions $\hat{g}_m$ for $R=1$, $R=3$ and $R=5$ (take $\lambda_n=12$) on Figure~\ref{fig:sagw-kernels}. What is the influence of $R$?
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.32\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(a) $R=1$}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.32\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(b) $R=3$}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.32\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(c) $R=5$}
+    \end{minipage}
+    \caption{The SAGW kernels functions}\label{fig:sagw-kernels}
+\end{figure}
+\end{solution}
+
+
+\newpage
+We will study the Molene data set (the one we used in the last tutorial).
+The signal is the temperature.
+
+\begin{exercise}
+Construct the graph using the distance matrix and exponential smoothing (use the median heuristics for the bandwidth parameter). 
+\begin{itemize}
+    \item Remove all stations with missing values in the temperature.
+    \item Choose the minimum threshold so that the network is connected and the average degree is at least 3.
+    \item What is the time where the signal is the least smooth?
+    \item What is the time where the signal is the smoothest?
+\end{itemize}
+\end{exercise}
+
+\begin{solution}
+The stations with missing values are\dots
+
+The threshold is equal to \dots.
+
+The signal is the least smooth at\dots
+
+The signal is the smoothest at\dots
+
+\end{solution}
+
+\newpage
+\begin{exercise}
+(For the remainder, set $R=3$ for all wavelet transforms.)
+
+For each node $v$, the vector $[W_f(1, v), W_f(2, v),\dots, W_f(M, v)]$ can be used as a vector of features. We can for instance classify nodes into low/medium/high frequency: 
+\begin{itemize}
+    \item a node is considered low frequency if the scales $m\in\{1,2,3\}$ contain most of the energy,
+    \item a node is considered medium frequency if the scales $m\in\{4,5,6\}$ contain most of the energy,
+    \item a node is considered high frequency if the scales $m\in\{6,7,9\}$ contain most of the energy.
+\end{itemize}
+
+
+For both signals from the previous question (smoothest and least smooth) as well as the first available timestamp, apply this procedure and display on the map the result (one colour per class).
+
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.45\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(a) Least smooth signal}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(b) Smoothest signal}
+    \end{minipage}
+    \vskip1em
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{(c) First available timestamp}
+    \end{minipage}
+    \caption{Classification of nodes into low/medium/high frequency}\label{fig:node-classif}
+\end{figure}
+\end{solution}
+
+\newpage
+\begin{exercise}
+Display the average temperature and for each timestamp, adapt the marker colour to the majority class present in the graph (see notebook for more details).
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.8\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \end{minipage}
+    \caption{Average temperature. Markers' colours depend on the majority class.}
+\end{figure}
+\end{solution}
+
+\newpage
+\begin{exercise}
+The previous graph $G$ only uses spatial information.
+To take into account the temporal dynamic, we construct a larger graph $H$ as follows: a node is now \textit{a station at a particular time} and is connected to neighbouring stations (with respect to $G$) and to itself at the previous timestamp and the following timestamp.
+Notice that the new spatio-temporal graph $H$ is the Cartesian product of the spatial graph $G$ and the temporal graph $G'$ (which is simply a line graph, without loop).
+
+\begin{itemize}
+    \item Express the Laplacian of $H$ using the Laplacian of $G$ and $G'$ (use Kronecker products).
+    \item Express the eigenvalues and eigenvectors of the Laplacian of $H$ using the eigenvalues and eigenvectors of the Laplacian of $G$ and $G'$.
+    \item Compute the wavelet transform of the temperature signal.
+    \item Classify nodes into low/medium/high frequency and display the same figure as in the previous question.
+\end{itemize}
+\end{exercise}
+
+\begin{solution}
+\begin{figure}
+    \centering
+    \begin{minipage}[t]{0.8\textwidth}
+    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \end{minipage}
+    \caption{Average temperature. Markers' colours depend on the majority class.}
+\end{figure}
+\end{solution}
+
+\end{document}
