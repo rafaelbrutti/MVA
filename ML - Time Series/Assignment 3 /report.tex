@@ -332,6 +332,16 @@ Notice that the new spatio-temporal graph $H$ is the Cartesian product of the sp
 \end{exercise}
 
 \begin{solution}
+
+The Laplacian of $H$ using the Laplacian of $G$ and $G'$ is : 
+$$ L(H) = L(G \times G') = L(G) \otimes I + I \otimes L(G')$$ 
+
+By noting $(\lambda_i)_{i [[1,n]]}$ and $(e_i)_{i [[1,n]]}$ respectively the eigenvalues and the eigenvectors of the Laplacian of $G$ and $(\mu_i)_{i [[1,n]]}$ and  $(v_i)_{i [[1,n]]}$ eigenvalues and the eigenvectors of the Laplacian of $G'$, the eigenvalues and the eigenvectors of the Laplacian of $H$ are : 
+
+$$ \nu_{ij} = \lambda_i + \mu_j $$
+$$ x_{ij} =  e_{i}\otimes v_j $$
+
+
 \begin{figure}
     \centering
     \begin{minipage}[t]{0.8\textwidth}
