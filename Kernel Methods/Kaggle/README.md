@@ -1,5 +1,7 @@
 Team TPT : Rafael Brutti and Florian Lamalle
+
 Kaggle Challenge Link : https://www.kaggle.com/competitions/mva-mash-kernel-methods-2021-2022/overview
+
 # Data Challenge - Kernel Methods - MVA 2021/2022
 
 ## Setup
