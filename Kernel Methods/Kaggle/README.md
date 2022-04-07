@@ -14,9 +14,7 @@ Tested in macOS Big Sur + Apple M1 CPU.
 ### Testing
 1. Clone this repository.
 2. Unzip the file "dataset.zip"
-3. Run "python start.py" in the shell. This will generate "Yte.csv" predictions in the "result" directory.
-
-3bis. You can also run the notebook "notebook.ipynb". 
+3. Run "python start.py" in the shell. This will generate "Yte.csv" predictions in the "result" directory. <br> You can also run the notebook "notebook.ipynb". 
 
 ### Methods
 
