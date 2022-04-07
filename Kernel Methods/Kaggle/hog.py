@@ -88,8 +88,8 @@ def hog(image):
     
     c_row, c_col = (8, 8) #pixels_per_cell
     
-    n_cells_row = int(H // c_row)  # number of cells along row-axis
-    n_cells_col = int(W // c_col)  # number of cells along col-axis
+    n_cells_row = int(H // c_row) 
+    n_cells_col = int(W // c_col)  
     
     #Compute orientation histogram
     orientations=9
@@ -100,6 +100,6 @@ def hog(image):
     new_magn = magn[rr, cc, idcs_max]
     new_orient  = orientation_histogram[rr, cc, idcs_max]
     
-    hist = orient_hist(new_magn, new_orient, c_col, c_row, W, H, n_cells_row,n_cells_col,orientations)
+    hist = orient_hist(new_magn, new_orient, c_col, c_row, n_cells_row,n_cells_col,orientations)
     
     return hist.ravel()
